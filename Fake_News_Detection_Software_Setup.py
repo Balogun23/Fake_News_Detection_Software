@@ -1,38 +1,28 @@
-# Fake_News_Detection_Software
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Fake News Detection</title>
-</head>
-<body>
-    <h1>Fake News Detection</h1>
-    <form id="prediction-form">
-        <textarea id="text-input" rows="4" cols="50"></textarea>
-        <button type="submit">Predict</button>
-    </form>
-    <div id="prediction-result"></div>
+# project_folder/
+# ├── app.py
+# ├── model/
+# # │   └── model.pkl
+# └── templates/
+#     └── index.html
+from flask import Flask, render_template, request, jsonify
+import joblib
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#prediction-form').submit(function(e) {
-                e.preventDefault();
-                var inputData = $('#text-input').val();
+app = Flask(__name__)
+model = joblib.load('/Users/macbook/Desktop/50%fake_news_classifier_model.pkl')
 
-                $.ajax({
-                    url: '/predict',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ 'text': inputData }),
-                    success: function(response) {
-                        $('#prediction-result').text('Prediction: ' + response.prediction);
-                    },
-                    error: function(xhr, status, error) {
-                        $('#prediction-result').text('Error: ' + xhr.responseJSON.error);
-                    }
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+@app.route('/')
+def index():
+    return render_template('Project2.html')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        data = request.json['text']
+        # Perform preprocessing and make predictions
+        prediction = model.predict([data])
+        return jsonify({'prediction': prediction[0]})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+if __name__ == '__main__':
+    app.run(debug=True)
